@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>디지털 트윈 헝맨</title>
+  <style>
+    body {
+      font-family: 'Arial', sans-serif;
+      text-align: center;
+      background-color: #f0f0f0;
+      padding-top: 40px;
+    }
+    .machine {
+      width: 240px;
+      height: 240px;
+      margin: 20px auto;
+      background-color: #999;
+      border-radius: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 20px;
+      font-weight: bold;
+      transition: background-color 0.4s;
+    }
+    .word {
+      font-size: 26px;
+      letter-spacing: 10px;
+      margin: 20px;
+    }
+    .letters button {
+      padding: 8px 12px;
+      margin: 4px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    .status {
+      margin: 10px;
+      font-size: 18px;
+    }
+    .reset {
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>디지털 트윈 헝맨</h1>
+  <div id="machine" class="machine">온도: --℃</div>
+  <div id="status" class="status">게임을 시작하세요</div>
+  <div class="word" id="wordDisplay">_ _ _ _</div>
+  <div class="letters" id="letterButtons"></div>
+  <div class="reset"><button onclick="startGame()">게임 시작</button></div>
+
+  <script>
+    const words = [
+      "robot", "motor", "sensor", "system", "data", "code", "cable", "power", "cloud",
+      "input", "output", "signal", "board", "logic", "module", "device", "safety", "energy"
+    ];
+
+    let selectedWord = "";
+    let guessed = [];
+    let mistakes = 0;
+    const maxMistakes = 8;
+    let temp = 30;
+
+    const wordDisplay = document.getElementById("wordDisplay");
+    const letterButtons = document.getElementById("letterButtons");
+    const status = document.getElementById("status");
+    const machine = document.getElementById("machine");
+
+    function startGame() {
+      selectedWord = words[Math.floor(Math.random() * words.length)];
+      guessed = [];
+      mistakes = 0;
+      temp = 30;
+      updateMachine();
+      status.textContent = "기계 작동 중... 단어를 추측하세요!";
+      displayWord();
+      generateButtons();
+    }
+
+    function displayWord() {
+      const display = selectedWord
+        .split("")
+        .map(letter => (guessed.includes(letter) ? letter : "_"))
+        .join(" ");
+      wordDisplay.textContent = display;
+
+      if (!display.includes("_")) {
+        status.textContent = "🎉 성공! 기계가 안정화되었습니다.";
+        disableButtons();
+      }
+    }
+
+    function generateButtons() {
+      letterButtons.innerHTML = "";
+      for (let i = 65; i <= 90; i++) {
+        const letter = String.fromCharCode(i).toLowerCase();
+        const button = document.createElement("button");
+        button.textContent = letter;
+        button.onclick = () => guess(letter);
+        button.id = "btn_" + letter;
+        letterButtons.appendChild(button);
+      }
+    }
+
+    function guess(letter) {
+      document.getElementById("btn_" + letter).disabled = true;
+      if (selectedWord.includes(letter)) {
+        guessed.push(letter);
+        displayWord();
+      } else {
+        mistakes++;
+        temp += 10;
+        updateMachine();
+        if (mistakes >= maxMistakes) {
+          wordDisplay.textContent = selectedWord.split("").join(" ");
+          status.textContent = "💥 기계 과열! 게임 실패!";
+          disableButtons();
+        }
+      }
+    }
+
+    function updateMachine() {
+      machine.textContent = `온도: ${temp}℃`;
+      if (temp < 50) {
+        machine.style.backgroundColor = "#4caf50"; // green
+      } else if (temp < 70) {
+        machine.style.backgroundColor = "#fbc02d"; // yellow
+      } else {
+        machine.style.backgroundColor = "#e53935"; // red
+      }
+    }
+
+    function disableButtons() {
+      const buttons = letterButtons.querySelectorAll("button");
+      buttons.forEach(btn => btn.disabled = true);
+    }
+  </script>
+
+</body>
+</html>
